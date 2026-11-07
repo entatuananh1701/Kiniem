@@ -122,7 +122,7 @@
             color: #2b5b75;
         }
 
-        /* Ô ngày & Hiệu ứng hòa trộn ảnh */
+        /* Ô ngày tròn & Hòa trộn ảnh + số */
         .day-cell {
             aspect-ratio: 1;
             display: flex;
@@ -131,18 +131,18 @@
             justify-content: center;
             font-size: 14px;
             font-weight: 600;
-            border-radius: 14px;
+            border-radius: 50%;
             cursor: pointer;
             position: relative;
             transition: all 0.2s;
             user-select: none;
-            overflow: hidden;
+            overflow: visible;
             background-size: cover;
             background-position: center;
         }
 
         .day-cell:hover {
-            transform: scale(1.05);
+            transform: scale(1.08);
         }
 
         .day-cell.empty {
@@ -155,17 +155,18 @@
             border: 2px dashed #4aa3df;
         }
 
-        /* Lớp phủ hòa trộn khi có ảnh */
+        /* Khi có ảnh nền hòa trộn */
         .day-cell.has-photo {
             color: #ffffff;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+            text-shadow: 0 1px 4px rgba(0,0,0,0.9);
         }
 
         .day-cell.has-photo::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.35); /* Tối nhẹ để nổi chữ */
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 50%;
             z-index: 1;
         }
 
@@ -175,19 +176,21 @@
             font-weight: bold;
         }
 
+        /* Sticker nhỏ xuất hiện góc trên bên phải */
         .sticker-badge {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
             position: absolute;
-            bottom: 2px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            top: -2px;
+            right: -2px;
+            font-size: 14px;
+            z-index: 3;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+            animation: bounce 0.3s ease;
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
         /* Modal */
@@ -222,33 +225,12 @@
             margin-bottom: 12px;
         }
 
-        .sticker-options {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .sticker-opt {
-            font-size: 22px;
-            padding: 6px;
-            background: #f8f8f8;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .sticker-opt:hover {
-            transform: scale(1.15);
-            background: var(--accent-blue);
-        }
-
         .upload-section {
             background: #f9f9f9;
             border: 2px dashed #ddd;
             border-radius: 14px;
             padding: 12px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .file-label {
@@ -276,6 +258,29 @@
             display: none;
             border: 2px solid #fff;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            text-align: center;
         }
 
         .modal-btns {
@@ -330,32 +335,26 @@
         </div>
 
         <div class="footer-hint">
-            💡 Chạm vào ngày để thêm ảnh từ máy hoặc sticker!
+            💡 Chạm vào ngày để thêm ảnh nền & sticker từ bàn phím!
         </div>
     </div>
 
-    <!-- Modal chọn Sticker & Tải ảnh -->
+    <!-- Modal tùy chỉnh ngày -->
     <div class="modal-overlay" id="modal">
         <div class="modal-content">
             <h3>Kỷ Niệm Ngày Này</h3>
 
-            <!-- Thêm ảnh từ máy -->
+            <!-- Chọn ảnh từ thiết bị -->
             <div class="upload-section">
                 <label for="photo-file" class="file-label">🖼️ Chọn ảnh từ thiết bị</label>
                 <input type="file" id="photo-file" class="file-input" accept="image/*">
                 <img id="preview-img" class="preview-img-box" alt="Preview">
             </div>
 
-            <!-- Nút chọn Sticker -->
-            <div class="sticker-options">
-                <div class="sticker-opt" onclick="selectSticker('❤️')">❤️</div>
-                <div class="sticker-opt" onclick="selectSticker('🐶')">🐶</div>
-                <div class="sticker-opt" onclick="selectSticker('🐱')">🐱</div>
-                <div class="sticker-opt" onclick="selectSticker('🎂')">🎂</div>
-                <div class="sticker-opt" onclick="selectSticker('🌸')">🌸</div>
-                <div class="sticker-opt" onclick="selectSticker('⭐')">⭐</div>
-                <div class="sticker-opt" onclick="selectSticker('☕')">☕</div>
-                <div class="sticker-opt" onclick="selectSticker('🎵')">🎵</div>
+            <!-- Nhập sticker từ bàn phím -->
+            <div class="input-group">
+                <label>Nhập Sticker từ bàn phím (VD: ❤️, 🌸, ⭐):</label>
+                <input type="text" id="sticker-input" placeholder="Gõ emoji bằng bàn phím...">
             </div>
 
             <div class="modal-btns">
@@ -377,10 +376,8 @@
 
         let currentDate = new Date();
         let selectedDayKey = "";
-        let memoryData = JSON.parse(localStorage.getItem("calendar_memories_v3") || "{}");
-        
+        let memoryData = JSON.parse(localStorage.getItem("calendar_memories_v5") || "{}");
         let tempPhoto = "";
-        let tempSticker = "";
 
         const monthSelect = document.getElementById("month-select");
         const yearSelect = document.getElementById("year-select");
@@ -389,6 +386,7 @@
         const modal = document.getElementById("modal");
         const photoFileInput = document.getElementById("photo-file");
         const previewImg = document.getElementById("preview-img");
+        const stickerInput = document.getElementById("sticker-input");
 
         monthNames.forEach((m, i) => {
             const opt = document.createElement("option");
@@ -404,7 +402,6 @@
             yearSelect.appendChild(opt);
         }
 
-        // Đọc file ảnh từ thiết bị
         photoFileInput.addEventListener("change", function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -455,7 +452,6 @@
                     cell.classList.add("today");
                 }
 
-                // Nếu ngày có lưu dữ liệu kỷ niệm
                 const item = memoryData[dayKey];
                 if (item) {
                     if (item.photo) {
@@ -480,7 +476,7 @@
             const item = memoryData[key] || {};
             
             tempPhoto = item.photo || "";
-            tempSticker = item.sticker || "";
+            stickerInput.value = item.sticker || "";
 
             if (tempPhoto) {
                 previewImg.src = tempPhoto;
@@ -497,16 +493,12 @@
             modal.classList.remove("active");
         }
 
-        function selectSticker(val) {
-            tempSticker = val;
-            saveMemory();
-        }
-
         function saveMemory() {
-            if (tempPhoto || tempSticker) {
+            const stickerVal = stickerInput.value.trim();
+            if (tempPhoto || stickerVal) {
                 memoryData[selectedDayKey] = {
                     photo: tempPhoto,
-                    sticker: tempSticker
+                    sticker: stickerVal
                 };
             } else {
                 delete memoryData[selectedDayKey];
@@ -520,7 +512,7 @@
         }
 
         function saveAndRender() {
-            localStorage.setItem("calendar_memories_v3", JSON.stringify(memoryData));
+            localStorage.setItem("calendar_memories_v5", JSON.stringify(memoryData));
             closeModal();
             renderCalendar();
         }
