@@ -57,3 +57,414 @@
             background: #f0f0f0;
             border: none;
             border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent-blue);
+        }
+
+        .month-year-selectors {
+            display: flex;
+            gap: 8px;
+        }
+
+        select {
+            border: none;
+            background: transparent;
+            font-family: var(--font-title);
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-main);
+            cursor: pointer;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .illustration {
+            width: 120px;
+            height: 120px;
+            margin: 5px 0 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .illustration svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .calendar-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            text-align: center;
+        }
+
+        .day-header {
+            font-weight: 600;
+            font-size: 14px;
+            padding: 8px 0;
+            color: #555;
+            border-radius: 8px;
+        }
+
+        .day-header:first-child {
+            background-color: var(--accent-blue);
+            color: #2b5b75;
+        }
+
+        .day-cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .day-cell:hover {
+            background-color: #f5f5f5;
+        }
+
+        .day-cell.empty {
+            cursor: default;
+            background: transparent !important;
+        }
+
+        .day-cell.today {
+            border: 2px dashed var(--accent-blue);
+        }
+
+        .sticker-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 2px;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            background: white;
+            overflow: hidden;
+        }
+
+        .sticker-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Modal chọn sticker */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .modal-content h3 {
+            font-family: var(--font-title);
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        .sticker-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .sticker-opt {
+            font-size: 24px;
+            padding: 8px;
+            background: #f8f8f8;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .sticker-opt:hover {
+            transform: scale(1.15);
+            background: var(--accent-blue);
+        }
+
+        .img-input-group {
+            margin-bottom: 15px;
+        }
+
+        .img-input-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-family: var(--font-body);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel { background: #eee; }
+        .btn-remove { background: #ffbebe; color: #900; }
+        
+        .footer-hint {
+            margin-top: 15px;
+            font-size: 11px;
+            color: #aaa;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calendar-card">
+        <!-- Header chuyển tháng/năm -->
+        <div class="controls">
+            <button class="nav-btn" id="prev-btn">❮</button>
+            <div class="month-year-selectors">
+                <select id="month-select"></select>
+                <select id="year-select"></select>
+            </div>
+            <button class="nav-btn" id="next-btn">❯</button>
+        </div>
+
+        <!-- Hình minh họa SVG Cute -->
+        <div class="illustration" id="illustration-box"></div>
+
+        <!-- Lưới Lịch -->
+        <div class="calendar-grid" id="calendar-grid">
+            <div class="day-header">S</div>
+            <div class="day-header">M</div>
+            <div class="day-header">T</div>
+            <div class="day-header">W</div>
+            <div class="day-header">T</div>
+            <div class="day-header">F</div>
+            <div class="day-header">S</div>
+        </div>
+
+        <div class="footer-hint">
+            💡 Chạm vào ngày bất kỳ để gắn sticker kỉ niệm!
+        </div>
+    </div>
+
+    <!-- Modal chọn Sticker -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <h3>Chọn Sticker Kỷ Niệm</h3>
+            <div class="sticker-options">
+                <div class="sticker-opt" onclick="setSticker('❤️')">❤️</div>
+                <div class="sticker-opt" onclick="setSticker('🐶')">🐶</div>
+                <div class="sticker-opt" onclick="setSticker('🐱')">🐱</div>
+                <div class="sticker-opt" onclick="setSticker('🎂')">🎂</div>
+                <div class="sticker-opt" onclick="setSticker('🌸')">🌸</div>
+                <div class="sticker-opt" onclick="setSticker('⭐')">⭐</div>
+                <div class="sticker-opt" onclick="setSticker('☕')">☕</div>
+                <div class="sticker-opt" onclick="setSticker('🎵')">🎵</div>
+            </div>
+            <div class="img-input-group">
+                <input type="text" id="img-url-input" placeholder="Hoặc dán Link ảnh của bạn vào đây...">
+            </div>
+            <div class="modal-btns">
+                <button class="btn btn-cancel" onclick="closeModal()">Hủy</button>
+                <button class="btn btn-remove" onclick="removeSticker()">Xóa</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+        
+        // Hình vẽ SVG nhân vật cute
+        const svgs = [
+            `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#fbd2d7"/><circle cx="40" cy="45" r="4" fill="#333"/><circle cx="60" cy="45" r="4" fill="#333"/><path d="M 45 55 Q 50 60 55 55" stroke="#333" stroke-width="3" fill="none"/><ellipse cx="30" cy="35" rx="8" ry="15" fill="#e8a2a8"/><ellipse cx="70" cy="35" rx="8" ry="15" fill="#e8a2a8"/></svg>`,
+            `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#e3f2fd"/><circle cx="40" cy="45" r="4" fill="#333"/><circle cx="60" cy="45" r="4" fill="#333"/><path d="M 45 55 Q 50 62 55 55" stroke="#333" stroke-width="3" fill="none"/><path d="M 35 25 Q 50 15 65 25 Q 50 30 35 25" fill="#90caf9"/></svg>`,
+            `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#fff9c4"/><circle cx="40" cy="45" r="4" fill="#333"/><circle cx="60" cy="45" r="4" fill="#333"/><ellipse cx="50" cy="52" rx="5" ry="3" fill="#ffb74d"/><path d="M 35 20 L 45 30 L 30 35 Z" fill="#fff176"/><path d="M 65 20 L 55 30 L 70 35 Z" fill="#fff176"/></svg>`
+        ];
+
+        let currentDate = new Date();
+        let selectedDayKey = "";
+        let memoryData = JSON.parse(localStorage.getItem("calendar_stickers_v2") || "{}");
+
+        const monthSelect = document.getElementById("month-select");
+        const yearSelect = document.getElementById("year-select");
+        const calendarGrid = document.getElementById("calendar-grid");
+        const illustrationBox = document.getElementById("illustration-box");
+        const modal = document.getElementById("modal");
+
+        // Khởi tạo Select Month & Year
+        monthNames.forEach((m, i) => {
+            const opt = document.createElement("option");
+            opt.value = i;
+            opt.textContent = m;
+            monthSelect.appendChild(opt);
+        });
+
+        for (let y = 2020; y <= 2030; y++) {
+            const opt = document.createElement("option");
+            opt.value = y;
+            opt.textContent = y;
+            yearSelect.appendChild(opt);
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            monthSelect.value = month;
+            yearSelect.value = year;
+
+            // Đổi hình minh họa
+            illustrationBox.innerHTML = svgs[month % svgs.length];
+
+            // Xóa các ngày cũ
+            const oldDays = calendarGrid.querySelectorAll(".day-cell");
+            oldDays.forEach(d => d.remove());
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+
+            // Ô trống trước ngày đầu tháng
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement("div");
+                emptyCell.className = "day-cell empty";
+                calendarGrid.appendChild(emptyCell);
+            }
+
+            // Tạo các ngày trong tháng
+            for (let day = 1; day <= totalDays; day++) {
+                const cell = document.createElement("div");
+                cell.className = "day-cell";
+                cell.textContent = day;
+
+                const dayKey = `${year}-${month + 1}-${day}`;
+
+                // Kiểm tra ngày hôm nay
+                if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
+                    cell.classList.add("today");
+                }
+
+                // Hiển thị Sticker nếu có
+                if (memoryData[dayKey]) {
+                    const badge = document.createElement("div");
+                    badge.className = "sticker-badge";
+                    if (memoryData[dayKey].startsWith("http")) {
+                        badge.innerHTML = `<img src="${memoryData[dayKey]}" alt="icon">`;
+                    } else {
+                        badge.textContent = memoryData[dayKey];
+                    }
+                    cell.appendChild(badge);
+                }
+
+                cell.onclick = () => openModal(dayKey);
+                calendarGrid.appendChild(cell);
+            }
+        }
+
+        function openModal(key) {
+            selectedDayKey = key;
+            document.getElementById("img-url-input").value = memoryData[key] && memoryData[key].startsWith("http") ? memoryData[key] : "";
+            modal.classList.add("active");
+        }
+
+        function closeModal() {
+            modal.classList.remove("active");
+        }
+
+        function setSticker(val) {
+            memoryData[selectedDayKey] = val;
+            saveAndRender();
+        }
+
+        function removeSticker() {
+            delete memoryData[selectedDayKey];
+            saveAndRender();
+        }
+
+        document.getElementById("img-url-input").addEventListener("change", (e) => {
+            if (e.target.value.trim()) {
+                setSticker(e.target.value.trim());
+            }
+        });
+
+        function saveAndRender() {
+            localStorage.setItem("calendar_stickers_v2", JSON.stringify(memoryData));
+            closeModal();
+            renderCalendar();
+        }
+
+        document.getElementById("prev-btn").onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        };
+
+        document.getElementById("next-btn").onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        };
+
+        monthSelect.onchange = (e) => {
+            currentDate.setMonth(parseInt(e.target.value));
+            renderCalendar();
+        };
+
+        yearSelect.onchange = (e) => {
+            currentDate.setFullYear(parseInt(e.target.value));
+            renderCalendar();
+        };
+
+        renderCalendar();
+    </script>
+</body>
+</html>
