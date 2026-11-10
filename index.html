@@ -361,4 +361,208 @@
     <script>
         const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
         
-        
+        const svgs = [
+            `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#fbd2d7"/><circle cx="40" cy="45" r="4" fill="#333"/><circle cx="60" cy="45" r="4" fill="#333"/><path d="M 45 55 Q 50 60 55 55" stroke="#333" stroke-width="3" fill="none"/><ellipse cx="30" cy="35" rx="8" ry="15" fill="#e8a2a8"/><ellipse cx="70" cy="35" rx="8" ry="15" fill="#e8a2a8"/></svg>`,
+            `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#e3f2fd"/><circle cx="40" cy="45" r="4" fill="#333"/><circle cx="60" cy="45" r="4" fill="#333"/><path d="M 45 55 Q 50 62 55 55" stroke="#333" stroke-width="3" fill="none"/><path d="M 35 25 Q 50 15 65 25 Q 50 30 35 25" fill="#90caf9"/></svg>`,
+            `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#fff9c4"/><circle cx="40" cy="45" r="4" fill="#333"/><circle cx="60" cy="45" r="4" fill="#333"/><ellipse cx="50" cy="52" rx="5" ry="3" fill="#ffb74d"/><path d="M 35 20 L 45 30 L 30 35 Z" fill="#fff176"/><path d="M 65 20 L 55 30 L 70 35 Z" fill="#fff176"/></svg>`
+        ];
+
+        let currentDate = new Date();
+        let selectedDayKey = "";
+        let memoryData = JSON.parse(localStorage.getItem("calendar_memories_v6") || "{}");
+        let tempPhoto = "";
+
+        const monthSelect = document.getElementById("month-select");
+        const yearSelect = document.getElementById("year-select");
+        const calendarGrid = document.getElementById("calendar-grid");
+        const illustrationBox = document.getElementById("illustration-box");
+        const modal = document.getElementById("modal");
+        const photoFileInput = document.getElementById("photo-file");
+        const previewImg = document.getElementById("preview-img");
+        const stickerInput = document.getElementById("sticker-input");
+
+        monthNames.forEach((m, i) => {
+            const opt = document.createElement("option");
+            opt.value = i;
+            opt.textContent = m;
+            monthSelect.appendChild(opt);
+        });
+
+        for (let y = 2020; y <= 2030; y++) {
+            const opt = document.createElement("option");
+            opt.value = y;
+            opt.textContent = y;
+            yearSelect.appendChild(opt);
+        }
+
+        photoFileInput.addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 300;
+                        const MAX_HEIGHT = 300;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        tempPhoto = canvas.toDataURL('image/jpeg', 0.7);
+                        previewImg.src = tempPhoto;
+                        previewImg.style.display = "block";
+                    }
+                    img.src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            monthSelect.value = month;
+            yearSelect.value = year;
+
+            illustrationBox.innerHTML = svgs[month % svgs.length];
+
+            const oldDays = calendarGrid.querySelectorAll(".day-cell");
+            oldDays.forEach(d => d.remove());
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement("div");
+                emptyCell.className = "day-cell empty";
+                calendarGrid.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const cell = document.createElement("div");
+                cell.className = "day-cell";
+                
+                const numSpan = document.createElement("span");
+                numSpan.className = "day-number";
+                numSpan.textContent = day;
+                cell.appendChild(numSpan);
+
+                const dayKey = `${year}-${month + 1}-${day}`;
+
+                if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
+                    cell.classList.add("today");
+                }
+
+                const item = memoryData[dayKey];
+                if (item) {
+                    if (item.photo) {
+                        cell.style.backgroundImage = `url('${item.photo}')`;
+                        cell.classList.add("has-photo");
+                    }
+                    if (item.sticker) {
+                        const badge = document.createElement("div");
+                        badge.className = "sticker-badge";
+                        badge.textContent = item.sticker;
+                        cell.appendChild(badge);
+                    }
+                }
+
+                cell.onclick = () => openModal(dayKey);
+                calendarGrid.appendChild(cell);
+            }
+        }
+
+        function openModal(key) {
+            selectedDayKey = key;
+            const item = memoryData[key] || {};
+            
+            tempPhoto = item.photo || "";
+            stickerInput.value = item.sticker || "";
+
+            if (tempPhoto) {
+                previewImg.src = tempPhoto;
+                previewImg.style.display = "block";
+            } else {
+                previewImg.style.display = "none";
+            }
+
+            photoFileInput.value = "";
+            modal.classList.add("active");
+        }
+
+        function closeModal() {
+            modal.classList.remove("active");
+        }
+
+        function saveMemory() {
+            const stickerVal = stickerInput.value.trim();
+            if (tempPhoto || stickerVal) {
+                memoryData[selectedDayKey] = {
+                    photo: tempPhoto,
+                    sticker: stickerVal
+                };
+            } else {
+                delete memoryData[selectedDayKey];
+            }
+            saveAndRender();
+        }
+
+        function removeMemory() {
+            delete memoryData[selectedDayKey];
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            try {
+                localStorage.setItem("calendar_memories_v6", JSON.stringify(memoryData));
+            } catch (e) {
+                alert("Bộ nhớ đã đầy, vui lòng chọn ảnh dung lượng nhẹ hơn!");
+                return;
+            }
+            closeModal();
+            renderCalendar();
+        }
+
+        document.getElementById("prev-btn").onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        };
+
+        document.getElementById("next-btn").onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        };
+
+        monthSelect.onchange = (e) => {
+            currentDate.setMonth(parseInt(e.target.value));
+            renderCalendar();
+        };
+
+        yearSelect.onchange = (e) => {
+            currentDate.setFullYear(parseInt(e.target.value));
+            renderCalendar();
+        };
+
+        renderCalendar();
+    </script>
+</body>
+</html>
