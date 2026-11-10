@@ -376,7 +376,7 @@
 
         let currentDate = new Date();
         let selectedDayKey = "";
-        let memoryData = JSON.parse(localStorage.getItem("calendar_memories_v5") || "{}");
+        let memoryData = JSON.parse(localStorage.getItem("calendar_memories_v6") || "{}");
         let tempPhoto = "";
 
         const monthSelect = document.getElementById("month-select");
@@ -402,14 +402,42 @@
             yearSelect.appendChild(opt);
         }
 
+        // Tự động nén ảnh để chống tràn bộ nhớ localStorage
         photoFileInput.addEventListener("change", function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(evt) {
-                    tempPhoto = evt.target.result;
-                    previewImg.src = tempPhoto;
-                    previewImg.style.display = "block";
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 300;
+                        const MAX_HEIGHT = 300;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        tempPhoto = canvas.toDataURL('image/jpeg', 0.7);
+                        previewImg.src = tempPhoto;
+                        previewImg.style.display = "block";
+                    }
+                    img.src = evt.target.result;
                 };
                 reader.readAsDataURL(file);
             }
@@ -512,7 +540,12 @@
         }
 
         function saveAndRender() {
-            localStorage.setItem("calendar_memories_v5", JSON.stringify(memoryData));
+            try {
+                localStorage.setItem("calendar_memories_v6", JSON.stringify(memoryData));
+            } catch (e) {
+                alert("Bộ nhớ đã đầy, vui lòng chọn ảnh dung lượng nhẹ hơn!");
+                return;
+            }
             closeModal();
             renderCalendar();
         }
